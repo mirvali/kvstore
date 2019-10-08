@@ -78,7 +78,7 @@ defmodule KVstore.KVRouterTest do
   end
 
   test "put ttl param exception" do
-    conn = conn(:put, "/", "key=name&value=John&ttl=")
+    conn = conn(:put, "/name", "value=John&ttl=")
     |> put_req_header("content-type", "application/x-www-form-urlencoded")
     |> KVRouter.call(@opts)
 
@@ -88,7 +88,7 @@ defmodule KVstore.KVRouterTest do
   end
 
   test "put value param exception" do
-    conn = conn(:put, "/", "key=namevalue=&ttl=123")
+    conn = conn(:put, "/name", "value=&ttl=123")
     |> put_req_header("content-type", "application/x-www-form-urlencoded")
     |> KVRouter.call(@opts)
 
