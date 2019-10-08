@@ -2,6 +2,7 @@
 defmodule KVstore.KVStorage do
 
   use GenServer
+  require Logger
   import :os
 
   @mytable :kvtable
@@ -29,18 +30,25 @@ defmodule KVstore.KVStorage do
   def handle_info(_, state) do
     {:ok, state}
   end
+
   def create(key, value, ttl) do
     timeout = system_time(:seconds) + ttl
     :dets.insert(@mytable, {key, value, timeout})
     :dets.sync(@mytable)
   end
+
   def find(key) do
-    case :dets.lookup(@mytable, key) |> List.first() do
-      {_, value, _} ->
-          value
+    case :dets.lookup(@mytable, key) |> List.first()  do
+      {_, value, ttl} ->
+         if ttl > system_time(:seconds) do
+            value
+         else
+            :ttl_timeout
+         end
       _ -> :not_found
     end
   end
+
   def del(key) do
     try do
       :dets.delete(@mytable, key)
@@ -50,5 +58,9 @@ defmodule KVstore.KVStorage do
     else
       _-> :deleted
     end
+  end
+
+  def time do
+    system_time(:seconds)
   end
 end

@@ -13,6 +13,7 @@ defmodule KVstore.KVRouter do
   get "/:key" do
     case KVStorage.find(key) do
       :not_found -> send_resp(conn, 404, "Record not found")
+      :ttl_timeout -> send_resp(conn, 404, "ttl timeout")
       value -> send_resp(conn, 200, value)
     end
   end
@@ -22,13 +23,14 @@ defmodule KVstore.KVRouter do
   end
 
   put "/:key" do
-    Map.put(conn.params, "key", key)
-    crud(conn.params, conn)
+     Map.put(conn.params, "key", key)
+     crud(conn.params, conn)
   end
 
   delete "/:key" do
     case KVStorage.find(key) do
       :not_found -> send_resp(conn, 404, "Record not found")
+      :ttl_timeout -> send_resp(conn, 404, "ttl timeout")
       _value ->
             case KVStorage.del(key) do
                :delete_error -> send_resp(conn, 404, "Delete error")
